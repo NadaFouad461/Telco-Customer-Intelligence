@@ -11,7 +11,7 @@ from pathlib import Path
 
 st.set_page_config(
     page_title="Telco Customer Intelligence",
-    page_icon="📊",
+    page_icon="📡",
     layout="wide",
 )
 

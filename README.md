@@ -90,10 +90,6 @@ Telco-Customer-Intelligence/
 │   ├── 05_regression.ipynb
 │   └── 06_clustering.ipynb
 │
-├── src/
-│   ├── preprocessing.py
-│   ├── feature_engineering.py
-│   └── utils.py
 │
 ├── models/
 │   ├── xgboost_churn_model.pkl
@@ -109,8 +105,6 @@ Telco-Customer-Intelligence/
 │       ├── overview.py
 │       └── customer_prediction.py
 │
-├── reports/
-│   └── figures/
 │
 ├── requirements.txt
 ├── .gitignore
@@ -515,9 +509,4 @@ The application is deployed using **Streamlit Community Cloud** directly from Gi
 
 ---
 
-# ⚠️ Notes
 
-- Model predictions are estimates and are not guarantees of future customer behavior.
-- Observed relationships in the EDA and segment profiles do not establish causation.
-- Churn-related fields such as `Churn Score` and `Churn Reason` were excluded from the churn prediction features to reduce leakage risk.
-- The original raw dataset is kept separate from the processed dataset.

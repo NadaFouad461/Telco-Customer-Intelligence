@@ -7,7 +7,7 @@ import streamlit as st
 
 st.set_page_config(
     page_title="Telco Customer Intelligence",
-    page_icon="📊",
+    page_icon="📡",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -175,7 +175,7 @@ pg = st.navigation(
         st.Page(
             "pages/overview.py",
             title="Overview",
-            icon="📊",
+            icon="📡",
         ),
        st.Page("pages/customer_prediction.py", title="Customer Prediction", icon="👤"),
     ],
