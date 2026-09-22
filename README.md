@@ -418,7 +418,7 @@ These examples demonstrate how different customer profiles produce different mod
 ## 1. Clone the Repository
 
 ```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
+git clone https://github.com/NadaFouad461/Telco-Customer-Intelligence.git
 cd Telco-Customer-Intelligence
 ```
 
@@ -460,7 +460,6 @@ The application is deployed using **Streamlit Community Cloud** directly from Gi
 ### Live Application
 
 🔗 **[Open the Live Streamlit App](https://telco-customer-intelligencegit-53g8gjudftswtd8456b286.streamlit.app/)**
-
 ### Deployment Requirements
 
 - GitHub repository containing the project
