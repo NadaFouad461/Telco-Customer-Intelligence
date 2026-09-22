@@ -549,6 +549,7 @@ def style_chart(fig, height=360):
             showline=True,
             linecolor=BORDER,
             zeroline=False,
+            fixedrange=True,  
         ),
 
         yaxis=dict(
@@ -565,6 +566,7 @@ def style_chart(fig, height=360):
             gridwidth=1,
             showline=False,
             zeroline=False,
+            fixedrange=True,  
         ),
     )
 
