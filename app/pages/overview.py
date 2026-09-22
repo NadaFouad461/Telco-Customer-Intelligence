@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import joblib
 from pathlib import Path
 
 
@@ -26,6 +27,18 @@ DATA_PATH = (
     / "data"
     / "processed"
     / "telco_cleaned.csv"
+)
+
+KMEANS_PATH = (
+    BASE_DIR
+    / "models"
+    / "kmeans_customer_segmentation.pkl"
+)
+
+CLUSTER_PREPROCESSOR_PATH = (
+    BASE_DIR
+    / "models"
+    / "clustering_preprocessor.pkl"
 )
 
 
@@ -56,6 +69,58 @@ def load_data():
 
 
 df = load_data()
+
+
+# =========================================================
+# LOAD CLUSTERING MODEL
+# =========================================================
+
+@st.cache_resource
+def load_clustering_artifacts():
+    kmeans_model = joblib.load(KMEANS_PATH)
+    clustering_preprocessor = joblib.load(CLUSTER_PREPROCESSOR_PATH)
+    return kmeans_model, clustering_preprocessor
+
+
+kmeans_model, clustering_preprocessor = load_clustering_artifacts()
+
+cluster_features = [
+    "Gender",
+    "Senior Citizen",
+    "Partner",
+    "Dependents",
+    "Tenure Months",
+    "Phone Service",
+    "Multiple Lines",
+    "Internet Service",
+    "Online Security",
+    "Online Backup",
+    "Device Protection",
+    "Tech Support",
+    "Streaming TV",
+    "Streaming Movies",
+    "Contract",
+    "Paperless Billing",
+    "Payment Method",
+    "Monthly Charges",
+    "Total Charges",
+]
+
+
+def assign_clusters(data):
+    """Assign existing K-Means cluster labels without retraining."""
+    if data.empty:
+        result = data.copy()
+        result["Cluster"] = pd.Series(dtype="int64")
+        return result
+
+    cluster_input = data[cluster_features].copy()
+    cluster_processed = clustering_preprocessor.transform(cluster_input)
+    cluster_labels = kmeans_model.predict(cluster_processed)
+
+    result = data.copy()
+    result["Cluster"] = cluster_labels
+    return result
 
 
 # =========================================================
@@ -101,6 +166,28 @@ h3 {
     font-weight: 700;
 }
 
+.segment-kpi-label {
+    color: #334155;
+    font-size: 14px;
+    line-height: 1.35;
+    margin-bottom: 8px;
+}
+
+.segment-kpi-value {
+    color: #172033;
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    margin-bottom: 14px;
+}
+
+.segment-kpi-caption {
+    color: #64748B;
+    font-size: 14px;
+    line-height: 1.35;
+}
+
 .segment-label {
     color: #0F766E !important;
     font-size: 11px;
@@ -116,21 +203,27 @@ h3 {
     border-top: 1px solid #D9E2EC;
 }
 
+
 div[data-testid="stMetric"] {
-    background-color: #FFFFFF;
-    border: 1px solid #D9E2EC;
-    border-radius: 14px;
-    padding: 18px 20px;
-    min-height: 110px;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    background-color: #FFFFFF !important;
+    border: 1px solid #D9E2EC !important;
+    border-radius: 14px !important;
+    padding: 16px 20px !important;
+    min-height: 115px !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
 }
 
 div[data-testid="stMetricLabel"] {
     color: #64748B !important;
+    font-size: 14px !important;
+    white-space: nowrap !important;
 }
 
 div[data-testid="stMetricValue"] {
     color: #172033 !important;
+    font-size: 28px !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
 }
 
 div[data-testid="stVerticalBlockBorderWrapper"] {
@@ -416,6 +509,9 @@ if filtered_df.empty:
         "No customers match the selected filter combination."
     )
 
+else:
+    filtered_df = assign_clusters(filtered_df)
+
 
 # =========================================================
 # PLOTLY STYLE
@@ -575,67 +671,42 @@ else:
 
 col1, col2, col3, col4 = st.columns(4)
 
-
 with col1:
-
-    with st.container(border=True):
-
-        st.metric(
-            "Customers",
-            f"{total_customers:,}",
-        )
-
-        st.caption(
-            "Customer records matching filters"
-        )
-
+    st.metric(
+        label="Customers",
+        value=f"{total_customers:,}",
+    )
+    st.caption("Customer records matching filters")
 
 with col2:
-
-    with st.container(border=True):
-
-        st.metric(
-            "Observed Churn",
-            f"{churn_rate:.1f}%",
-        )
-
-        st.caption(
-            "Customers who churned"
-        )
-
+    st.metric(
+        label="Observed Churn",
+        value=f"{churn_rate:.1f}%",
+    )
+    st.caption("Customers who churned")
 
 with col3:
+    if not filtered_df.empty:
+        segment_counts = filtered_df["Cluster"].value_counts()
+        most_represented_cluster = int(segment_counts.idxmax())
+        most_represented_segment = f"Segment {most_represented_cluster + 1}"
+        most_represented_count = int(segment_counts.loc[most_represented_cluster])
+    else:
+        most_represented_segment = "—"
+        most_represented_count = 0
 
-    with st.container(border=True):
-
-        active_segments = (
-            str(filtered_df["Cluster"].nunique()) 
-            if "Cluster" in filtered_df.columns 
-            else "3"
-        )
-
-        st.metric(
-            "Customer Segments",
-            active_segments,
-        )
-
-        st.caption(
-            "K-Means segments represented"
-        )
-
+    st.metric(
+        label="Dominant Segment",
+        value=most_represented_segment,
+    )
+    st.caption(f"{most_represented_count:,} customers in group")
 
 with col4:
-
-    with st.container(border=True):
-
-        st.metric(
-            "Maximum Tenure",
-            f"{max_tenure}",
-        )
-
-        st.caption(
-            "Months"
-        )
+    st.metric(
+        label="Maximum Tenure",
+        value=f"{max_tenure}",
+    )
+    st.caption("Months")
 
 
 # =========================================================
@@ -993,39 +1064,32 @@ st.markdown(
 
 
 # ---------------------------------------------------------
-# Temporary segment assignment
+# Dynamic segment assignment
 # ---------------------------------------------------------
-# IMPORTANT:
-# The clustering model itself is not being retrained.
-# We use the existing Cluster column if it exists.
-#
-# If the cleaned CSV does not contain Cluster, the segment
-# distribution chart cannot be filtered yet.
+# The saved K-Means model assigns each filtered customer to
+# one of the three existing customer segments.
+# The model is NOT retrained in the Overview page.
 # ---------------------------------------------------------
 
-if "Cluster" in filtered_df.columns:
+if not filtered_df.empty:
 
-    segment_data = (
+    segment_counts = (
         filtered_df["Cluster"]
         .value_counts()
-        .sort_index()
-        .reset_index()
+        .reindex([0, 1, 2], fill_value=0)
     )
 
-    segment_data.columns = [
-        "Cluster",
-        "Customers",
-    ]
+    segment_data = pd.DataFrame({
+        "Cluster": [0, 1, 2],
+        "Customers": segment_counts.values,
+    })
 
-    segment_data["Segment"] = (
-        segment_data["Cluster"]
-        .map(
-            {
-                0: "Segment 01",
-                1: "Segment 02",
-                2: "Segment 03",
-            }
-        )
+    segment_data["Segment"] = segment_data["Cluster"].map(
+        {
+            0: "Segment 01",
+            1: "Segment 02",
+            2: "Segment 03",
+        }
     )
 
     fig_segments = px.bar(
@@ -1060,8 +1124,8 @@ if "Cluster" in filtered_df.columns:
 else:
 
     st.info(
-        "Segment distribution will be available after the "
-        "customer cluster assignments are added to the processed data."
+        "No segment distribution is available because no customers "
+        "match the selected filters."
     )
 
 
@@ -1072,30 +1136,10 @@ else:
 col1, col2, col3 = st.columns(3)
 
 
-segment_profiles = {
-    0: {
-        "title": "Newer / Higher-Risk Internet Customers",
-        "customers": 3192,
-        "tenure": 15.3,
-        "monthly": 67.88,
-        "churn": 44,
-    },
-
-    1: {
-        "title": "Basic / Non-Internet Customers",
-        "customers": 1526,
-        "tenure": 30.6,
-        "monthly": 21.08,
-        "churn": 7,
-    },
-
-    2: {
-        "title": "Long-Tenure / Higher-Value Customers",
-        "customers": 2325,
-        "tenure": 57.0,
-        "monthly": 89.15,
-        "churn": 15,
-    },
+segment_titles = {
+    0: "Newer / Higher-Risk Internet Customers",
+    1: "Basic / Non-Internet Customers",
+    2: "Long-Tenure / Higher-Value Customers",
 }
 
 
@@ -1105,7 +1149,22 @@ for column, cluster_id, number in zip(
     [1, 2, 3],
 ):
 
-    profile = segment_profiles[cluster_id]
+    if filtered_df.empty:
+        profile = None
+    else:
+        cluster_df = filtered_df[
+            filtered_df["Cluster"] == cluster_id
+        ]
+
+        if cluster_df.empty:
+            profile = None
+        else:
+            profile = {
+                "customers": len(cluster_df),
+                "tenure": cluster_df["Tenure Months"].mean(),
+                "monthly": cluster_df["Monthly Charges"].mean(),
+                "churn": cluster_df["Churn Value"].mean() * 100,
+            }
 
     with column:
 
@@ -1115,31 +1174,37 @@ for column, cluster_id, number in zip(
                 f'<div class="segment-label">'
                 f'SEGMENT {number:02d}'
                 f'</div>',
-                unsafe_allow_html=True,
+                unsafe_allow_html=True
             )
 
             st.markdown(
                 f'<div class="segment-title">'
-                f'{profile["title"]}'
+                f'{segment_titles[cluster_id]}'
                 f'</div>',
-                unsafe_allow_html=True,
+                unsafe_allow_html=True
             )
 
-            st.write(
-                f'{profile["customers"]:,} customers'
-            )
+            if profile is None:
 
-            st.write(
-                f'{profile["tenure"]:.1f} months average tenure'
-            )
+                st.write("0 customers match the current filters")
 
-            st.write(
-                f'${profile["monthly"]:.2f} average monthly charges'
-            )
+            else:
 
-            st.write(
-                f'{profile["churn"]}% observed churn'
-            )
+                st.write(
+                    f'{profile["customers"]:,} customers'
+                )
+
+                st.write(
+                    f'{profile["tenure"]:.1f} months average tenure'
+                )
+
+                st.write(
+                    f'${profile["monthly"]:.2f} average monthly charges'
+                )
+
+                st.write(
+                    f'{profile["churn"]:.1f}% observed churn'
+                )
 
 
 # =========================================================

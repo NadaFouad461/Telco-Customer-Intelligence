@@ -151,9 +151,10 @@ div[data-baseweb="select"] span {
    Primary Submit Button Styling
 --------------------------------------------------------- */
 .stButton > button, 
-div[data-testid="stFormSubmitButton"] > button {
+div[data-testid="stFormSubmitButton"] > button,
+div[data-testid="stFormSubmitButton"] button p {
     background-color: #0F766E !important;
-    color: #FFFFFF !important;
+    color: #FFFFFF !important; 
     border: none !important;
     border-radius: 8px !important;
     font-weight: 600 !important;
@@ -163,7 +164,8 @@ div[data-testid="stFormSubmitButton"] > button {
 }
 
 .stButton > button:hover, 
-div[data-testid="stFormSubmitButton"] > button:hover {
+div[data-testid="stFormSubmitButton"] > button:hover,
+div[data-testid="stFormSubmitButton"] button:hover p {
     background-color: #115E59 !important;
     color: #FFFFFF !important;
 }
