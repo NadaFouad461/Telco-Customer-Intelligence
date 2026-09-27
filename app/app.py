@@ -36,6 +36,9 @@ st.markdown(
 
 header[data-testid="stHeader"] {
     background-color: #172033 !important;
+    left: 0 !important;
+    width: 100% !important;
+    z-index: 99999 !important;
 }
 
 header[data-testid="stHeader"] * {
@@ -88,7 +91,7 @@ section[data-testid="stSidebar"] {
 
 .block-container {
     max-width: 1200px;
-    padding-top: 3rem;
+    padding-top: 4rem;
     padding-bottom: 4rem;
 }
 

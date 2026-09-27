@@ -5,15 +5,7 @@ import joblib
 from pathlib import Path
 
 
-# =========================================================
-# PAGE CONFIG
-# =========================================================
 
-st.set_page_config(
-    page_title="Customer Prediction",
-    page_icon="👤",
-    layout="wide",
-)
 
 
 # =========================================================
