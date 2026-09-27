@@ -37,16 +37,13 @@ st.markdown(
 header[data-testid="stHeader"] {
     background-color: #172033 !important;
     left: 0 !important;
-    width: 100% !important;
+    width: 100vw !important;
     z-index: 99999 !important;
 }
 
-header[data-testid="stHeader"] * {
-    color: #FFFFFF !important;
-}
-
-div[data-testid="stToolbar"] {
+div[data-testid="stSidebarCollapsedControl"] {
     background-color: #172033 !important;
+    color: #FFFFFF !important;
 }
 
 
@@ -191,3 +188,23 @@ pg = st.navigation(
 # =========================================================
 
 pg.run()
+
+
+# =========================================================
+# AUTO OPEN SIDEBAR
+# =========================================================
+
+st.components.v1.html(
+    """
+    <script>
+        var sidebar = window.parent.document.querySelector('section[data-testid="stSidebar"]');
+        var button = window.parent.document.querySelector('button[data-testid="stHeaderActionElements"]');
+        if (sidebar && sidebar.getAttribute('aria-expanded') === 'false') {
+            if (button) {
+                button.click();
+            }
+        }
+    </script>
+    """,
+    height=0,
+)
